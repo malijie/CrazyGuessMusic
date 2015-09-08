@@ -1,0 +1,53 @@
+<!-- 唱片布局   -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center">
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@mipmap/game_title"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textColor="@color/white"
+            android:text="歌曲"
+            android:textSize="18sp"/>
+    </FrameLayout>
+    <FrameLayout
+        android:layout_width="260dip"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/pan_img_disc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@mipmap/game_disc"
+            android:layout_gravity="center"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@mipmap/game_disc_light"
+            android:layout_gravity="center"/>
+        <ImageButton
+            android:id="@+id/pan_button_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/pan_start_selector"
+            android:layout_gravity="center"/>
+        <ImageView
+            android:id="@+id/pan_img_bar"
+            android:layout_width="50dip"
+            android:layout_height="140dip"
+            android:src="@mipmap/index_pin"
+            android:layout_gravity="right"
+            />
+    </FrameLayout>
+
+</LinearLayout>

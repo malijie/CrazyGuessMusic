@@ -5,5 +5,5 @@
     android:background="@mipmap/index_background">
 
   <include layout="@layout/top_bar"/>
-
+  <include layout="@layout/pan"/>
 </RelativeLayout>
