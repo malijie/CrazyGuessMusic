@@ -1,17 +1,17 @@
 package com.crazy.guess.music;
 
 import android.app.Activity;
-import android.media.Image;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Toast;
+import com.crazy.guess.music.model.WordButton;
+import com.crazy.guess.music.widget.WordButtonGridView;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainActivity extends Activity implements View.OnClickListener{
@@ -21,6 +21,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private ImageView mViewBar = null;
     //播放按钮
     private ImageButton mButtonPlay = null;
+    //自定义控件 文字待选框
+    private WordButtonGridView mWordButtonGridView = null;
     //唱片动画
     private Animation mPanAnim = null;
     //播杆进入动画
@@ -35,6 +37,10 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private LinearInterpolator mBarOutLin;
     //标志符，防止用户多次点击
     private boolean isPlaying = false;
+    //待选框的数据集合
+    private List<WordButton> mWordButtons = null;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +51,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
         initAnimations();
         //初始化控件
         initViews();
+        //初始化待选框中数据
+        initCurrentStageData();
 
     }
 
@@ -55,6 +63,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mButtonPlay = (ImageButton)findViewById(R.id.pan_button_start);
         mViewPan = (ImageView) findViewById(R.id.pan_img_disc);
         mViewBar = (ImageView) findViewById(R.id.pan_img_bar);
+
+        mWordButtonGridView = (WordButtonGridView) findViewById(R.id.words_gridview);
 
         mButtonPlay.setOnClickListener(this);
     }
@@ -140,6 +150,31 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
     }
 
+    /**
+     * 初始化待选框数据
+     */
+    private void initCurrentStageData(){
+        //生成待选框数据
+        mWordButtons = getOptionsData();
+        //将数据给自定义控件
+        mWordButtonGridView.updateData(mWordButtons);
+
+    }
+
+    /**
+     * 生成待选框数据
+     * @return
+     */
+    private List<WordButton> getOptionsData(){
+        List<WordButton> wordButtons = new ArrayList<WordButton>();
+        //TODO 随机生成数据
+        for(int i=0;i<24;i++){
+            WordButton wordButton = new WordButton();
+            wordButton.mWordText = "好";
+            wordButtons.add(wordButton);
+        }
+        return wordButtons;
+    }
 
     @Override
     public void onClick(View view) {
@@ -163,4 +198,10 @@ public class MainActivity extends Activity implements View.OnClickListener{
            }
        }
    }
+
+    @Override
+    protected void onPause() {
+        mViewPan.clearAnimation();
+        super.onPause();
+    }
 }

@@ -1,0 +1,34 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <LinearLayout
+        android:id="@+id/word_select_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dip"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+    </LinearLayout>
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@mipmap/game_line"/>
+    <com.crazy.guess.music.widget.WordButtonGridView
+        android:id="@+id/words_gridview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="5dip"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:horizontalSpacing="2dip"
+        android:verticalSpacing="2dip"
+        android:paddingLeft="2dip"
+        android:paddingRight="2dip"
+        android:numColumns="8"
+        />
+
+
+</LinearLayout>
