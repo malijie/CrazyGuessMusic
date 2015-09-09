@@ -1,20 +1,33 @@
 package com.crazy.guess.music;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+
 import com.crazy.guess.music.model.WordButton;
+import com.crazy.guess.music.utils.Util;
 import com.crazy.guess.music.widget.WordButtonGridView;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class MainActivity extends Activity implements View.OnClickListener{
+    /**
+     * ===============Constants=================
+     */
+    private static final int OPTIONS_WORDS_SIZE = 24;
+    private static final int SELECTED_WORDS_SIZE = 4;
+    /**
+     * ===============view widget==============
+     */
     //唱片控件
     private ImageView mViewPan = null;
     //播杆控件
@@ -23,6 +36,9 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private ImageButton mButtonPlay = null;
     //自定义控件 文字待选框
     private WordButtonGridView mWordButtonGridView = null;
+    /**
+     * ===============Animations===============
+     */
     //唱片动画
     private Animation mPanAnim = null;
     //播杆进入动画
@@ -35,10 +51,15 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private LinearInterpolator mBarInLin;
     //播杆移出线性动画
     private LinearInterpolator mBarOutLin;
+    /**
+     * ==============Data======================
+     */
     //标志符，防止用户多次点击
     private boolean isPlaying = false;
     //待选框的数据集合
     private List<WordButton> mWordButtons = null;
+    //已选文字框数据集合
+    private List<WordButton> mSelectButtons = null;
 
 
 
@@ -154,11 +175,35 @@ public class MainActivity extends Activity implements View.OnClickListener{
      * 初始化待选框数据
      */
     private void initCurrentStageData(){
+        //生成已选文字框数据
+        mSelectButtons = getSelectedWords();
+        //生成已选文字框布局
+        LinearLayout layoutContainer = (LinearLayout)findViewById(R.id.word_select_container);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(40,40);
+        for(int i=0;i<mSelectButtons.size();i++){
+            layoutContainer.addView(mSelectButtons.get(i).mButton,params);
+        }
+
         //生成待选框数据
         mWordButtons = getOptionsData();
         //将数据给自定义控件
         mWordButtonGridView.updateData(mWordButtons);
 
+    }
+
+    private List<WordButton> getSelectedWords(){
+        List<WordButton> selectWords = new ArrayList<WordButton>();
+        for(int i=0;i<SELECTED_WORDS_SIZE;i++){
+            View v =  Util.getView(this,R.layout.word_button_item);
+            WordButton wordButton = new WordButton();
+            wordButton.mButton = (Button) v.findViewById(R.id.item_button);
+            wordButton.mButton.setBackgroundResource(R.mipmap.game_wordblank);
+            wordButton.mButton.setTextColor(Color.WHITE);
+            wordButton.mWordText = "美";
+            selectWords.add(wordButton);
+        }
+
+        return selectWords;
     }
 
     /**
@@ -168,7 +213,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private List<WordButton> getOptionsData(){
         List<WordButton> wordButtons = new ArrayList<WordButton>();
         //TODO 随机生成数据
-        for(int i=0;i<24;i++){
+        for(int i=0;i<OPTIONS_WORDS_SIZE;i++){
             WordButton wordButton = new WordButton();
             wordButton.mWordText = "好";
             wordButtons.add(wordButton);

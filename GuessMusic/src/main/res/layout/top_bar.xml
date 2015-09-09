@@ -1,7 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="60dip"
+    android:layout_height="50dip"
     android:background="@mipmap/index_bar"
     android:orientation="horizontal">
 
@@ -9,14 +9,14 @@
         android:id="@+id/topbar_button_back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dip"
+        android:layout_margin="5dip"
         android:background="@drawable/topbar_back_selector"/>
 
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_margin="10dip"
+        android:layout_margin="5dip"
         android:layout_centerInParent="true">
         <ImageButton
             android:id="@+id/topbar_button_addcoin"

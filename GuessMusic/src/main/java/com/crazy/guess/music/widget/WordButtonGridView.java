@@ -69,7 +69,7 @@ public class WordButtonGridView extends GridView{
            if(view == null){
                view = Util.getView(mContext,R.layout.word_button_item);
                holder = mWordButtons.get(postion);
-               holder.mButton = (Button)view.findViewById(R.id.item_id);
+               holder.mButton = (Button)view.findViewById(R.id.item_button);
                view.setTag(holder);
            }else{
                holder = (WordButton) view.getTag();
