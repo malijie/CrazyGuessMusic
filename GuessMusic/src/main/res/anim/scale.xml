@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android" >
+    <scale
+        android:duration="500"
+        android:fillAfter="false"
+        android:fromXScale="0.0"
+        android:fromYScale="0.0"
+        android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:toXScale="1.0"
+        android:toYScale="1.0" />
+    <!-- scale动画 渐变尺寸伸缩 -->
+
+    <!-- duration 动画持续时间   -->
+    <!-- fillAfter 是否填充   -->
+    <!-- fromXScale 从X轴0开始伸缩   -->
+    <!-- interpolator 动画加速度   -->
+    <!-- pivotX 动画从X轴的旋转位置   -->
+    <!-- toXScale 从X轴1.0结束伸缩   -->
+
+</set>

@@ -11,7 +11,9 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
+import com.crazy.guess.music.interfaces.IWordButtonOnClickListener;
 import com.crazy.guess.music.model.WordButton;
 import com.crazy.guess.music.utils.Util;
 import com.crazy.guess.music.widget.WordButtonGridView;
@@ -88,6 +90,13 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mWordButtonGridView = (WordButtonGridView) findViewById(R.id.words_gridview);
 
         mButtonPlay.setOnClickListener(this);
+        mWordButtonGridView.setWordButtonOnClickListener(new IWordButtonOnClickListener() {
+            @Override
+            public void onWordButtonClick() {
+                Toast.makeText(MainActivity.this,"hello",Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 
     /**
@@ -111,7 +120,6 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mBarOutAnim.setInterpolator(mBarOutLin);
         mBarOutAnim.setFillAfter(true);
         mBarOutAnim.setFillAfter(true);//动画播放时保持停留状态
-
 
         //设置唱片动画相关播放顺序
         mPanAnim.setAnimationListener(new Animation.AnimationListener() {
@@ -177,13 +185,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private void initCurrentStageData(){
         //生成已选文字框数据
         mSelectButtons = getSelectedWords();
-        //生成已选文字框布局
-        LinearLayout layoutContainer = (LinearLayout)findViewById(R.id.word_select_container);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(40,40);
-        for(int i=0;i<mSelectButtons.size();i++){
-            layoutContainer.addView(mSelectButtons.get(i).mButton,params);
-        }
-
+        //设置已选文字框布局
+        setSelectedWordsLayout();
         //生成待选框数据
         mWordButtons = getOptionsData();
         //将数据给自定义控件
@@ -191,6 +194,11 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
     }
 
+
+    /**
+     * 生成已选框文字数据
+     * @return
+     */
     private List<WordButton> getSelectedWords(){
         List<WordButton> selectWords = new ArrayList<WordButton>();
         for(int i=0;i<SELECTED_WORDS_SIZE;i++){
@@ -204,6 +212,17 @@ public class MainActivity extends Activity implements View.OnClickListener{
         }
 
         return selectWords;
+    }
+
+    /**
+     * 动态设置已选框布局显示
+     */
+    private void setSelectedWordsLayout(){
+        LinearLayout layoutContainer = (LinearLayout)findViewById(R.id.word_select_container);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(40,40);
+        for(int i=0;i<mSelectButtons.size();i++){
+            layoutContainer.addView(mSelectButtons.get(i).mButton,params);
+        }
     }
 
     /**

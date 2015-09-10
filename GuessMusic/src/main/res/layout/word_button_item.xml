@@ -1,4 +1,4 @@
-<!-- 待选文字布局   -->
+<!-- 待选文字按钮布局   -->
 <Button xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_button"

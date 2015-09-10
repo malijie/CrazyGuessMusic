@@ -4,12 +4,14 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
-import android.widget.ListAdapter;
 
 import com.crazy.guess.music.R;
+import com.crazy.guess.music.interfaces.IWordButtonOnClickListener;
 import com.crazy.guess.music.model.WordButton;
 import com.crazy.guess.music.utils.Util;
 
@@ -26,6 +28,10 @@ public class WordButtonGridView extends GridView{
     private List<WordButton> mWordButtons = new ArrayList<WordButton>();
     //自定义待选文字框adapter
     private WordButtonAdapter mAdapter = null;
+    //WordButton显示动画
+    private Animation mWordButtonAnimation;
+    //WordButton点击接口
+    private IWordButtonOnClickListener mIListener;
 
     public WordButtonGridView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -44,6 +50,15 @@ public class WordButtonGridView extends GridView{
         mAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * 设置点击wordButton点击接口
+     * @param listener
+     */
+    public void setWordButtonOnClickListener(IWordButtonOnClickListener listener){
+        if(listener != null){
+            this.mIListener = listener;
+        }
+    }
 
     private class WordButtonAdapter extends BaseAdapter{
 
@@ -63,17 +78,31 @@ public class WordButtonGridView extends GridView{
        }
 
        @Override
-       public View getView(int postion, View view, ViewGroup viewGroup) {
+       public View getView(int position, View view, ViewGroup viewGroup) {
            //获取每一个WordButton
            WordButton holder;
            if(view == null){
-               view = Util.getView(mContext,R.layout.word_button_item);
-               holder = mWordButtons.get(postion);
+               view = Util.getView(mContext, R.layout.word_button_item);
+               holder = mWordButtons.get(position);
                holder.mButton = (Button)view.findViewById(R.id.item_button);
+
+               //设置WordButton动画
+               mWordButtonAnimation = AnimationUtils.loadAnimation(mContext,R.anim.scale);
+               mWordButtonAnimation.setStartOffset(position * 100);
+
+               holder.mButton.setOnClickListener(new OnClickListener() {
+                   @Override
+                   public void onClick(View view) {
+                       mIListener.onWordButtonClick();
+                   }
+               });
+
                view.setTag(holder);
            }else{
                holder = (WordButton) view.getTag();
            }
+
+           holder.mButton.startAnimation(mWordButtonAnimation);
            holder.mButton.setText(holder.mWordText);
            return view;
        }
