@@ -3,6 +3,7 @@ package com.crazy.guess.music;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -13,12 +14,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.crazy.guess.music.data.Constants;
 import com.crazy.guess.music.interfaces.IWordButtonOnClickListener;
+import com.crazy.guess.music.model.Song;
 import com.crazy.guess.music.model.WordButton;
 import com.crazy.guess.music.utils.Util;
 import com.crazy.guess.music.widget.WordButtonGridView;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 
 public class MainActivity extends Activity implements View.OnClickListener{
@@ -62,7 +66,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private List<WordButton> mWordButtons = null;
     //已选文字框数据集合
     private List<WordButton> mSelectButtons = null;
-
+    //当前歌曲关卡对象
+    private Song mCurrentSong = null;
 
 
     @Override
@@ -93,7 +98,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mWordButtonGridView.setWordButtonOnClickListener(new IWordButtonOnClickListener() {
             @Override
             public void onWordButtonClick() {
-                Toast.makeText(MainActivity.this,"hello",Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "hello", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -194,14 +199,41 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
     }
 
+    //当前关卡索引
+    private int mCurrentStageIndex = 9;
+
+    /**
+     * 获取当前关卡歌曲信息
+     * @param mCurrentStageIndex
+     * @return
+     */
+    private Song getCurrentStageSong(int mCurrentStageIndex){
+        Song song = new Song();
+        String songInfo[] = Constants.SONGS_INFO[mCurrentStageIndex];
+        String mSongName = songInfo[Constants.SONG_NAME_INDEX];
+        String mFileName = songInfo[Constants.FILE_NAME_INDEX];
+        song.setFileName(mFileName);
+        song.setSongName(mSongName);
+        return song;
+    }
+
+    /**
+     * 获取当前歌曲长度
+     * @return
+     */
+    private int getCurrentSongLength(){
+        mCurrentSong = getCurrentStageSong(mCurrentStageIndex);
+        return mCurrentSong.getLength();
+    }
 
     /**
      * 生成已选框文字数据
      * @return
      */
     private List<WordButton> getSelectedWords(){
+        //根据当前关卡获取歌曲名称长度
         List<WordButton> selectWords = new ArrayList<WordButton>();
-        for(int i=0;i<SELECTED_WORDS_SIZE;i++){
+        for(int i=0;i<getCurrentSongLength();i++){
             View v =  Util.getView(this,R.layout.word_button_item);
             WordButton wordButton = new WordButton();
             wordButton.mButton = (Button) v.findViewById(R.id.item_button);
@@ -221,8 +253,16 @@ public class MainActivity extends Activity implements View.OnClickListener{
         LinearLayout layoutContainer = (LinearLayout)findViewById(R.id.word_select_container);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(40,40);
         for(int i=0;i<mSelectButtons.size();i++){
-            layoutContainer.addView(mSelectButtons.get(i).mButton,params);
+            layoutContainer.addView(mSelectButtons.get(i).mButton, params);
         }
+    }
+
+    /**
+     * 获取当前关卡歌曲名称
+     * @return
+     */
+    private char[] getSongName(){
+       return mCurrentSong.getSongName().toCharArray();
     }
 
     /**
@@ -230,11 +270,31 @@ public class MainActivity extends Activity implements View.OnClickListener{
      * @return
      */
     private List<WordButton> getOptionsData(){
+        //一共24个待选文字（答案 ＋ 干扰文字）
+        char[] words = new char[OPTIONS_WORDS_SIZE];
+        char[] songName = mCurrentSong.getSongName().toCharArray();
+        //获取歌曲答案文字
+        for(int i=0;i<songName.length;i++){
+            words[i] = songName[i];
+        }
+        //填充随机干扰文字
+        for(int i=songName.length;i<OPTIONS_WORDS_SIZE;i++){
+            words[i] =Util.getRandomChar();
+        }
+        //打乱待选文字框中填充顺序，算法为将歌曲名称的汉字与生成的随机数下标对应的汉字进行交换，交换次数为歌曲名称的长度（既3个字的歌曲名称则需交换3次）
+        for(int i=0;i<songName.length;i++){
+            Random random = new Random();
+            int index =  random.nextInt(OPTIONS_WORDS_SIZE);
+            char temp = words[index];
+            words[index] = words[i];
+            words[i] = temp;
+        }
+
         List<WordButton> wordButtons = new ArrayList<WordButton>();
         //TODO 随机生成数据
         for(int i=0;i<OPTIONS_WORDS_SIZE;i++){
             WordButton wordButton = new WordButton();
-            wordButton.mWordText = "好";
+            wordButton.mWordText = String.valueOf(words[i]);
             wordButtons.add(wordButton);
         }
         return wordButtons;
