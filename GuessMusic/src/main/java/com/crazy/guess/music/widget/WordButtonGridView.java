@@ -78,24 +78,25 @@ public class WordButtonGridView extends GridView{
        }
 
        @Override
-       public View getView(int position, View view, ViewGroup viewGroup) {
+       public View getView(final int position, View view, ViewGroup viewGroup) {
            //获取每一个WordButton
-           WordButton holder;
+           final WordButton holder;
            if(view == null){
                view = Util.getView(mContext, R.layout.word_button_item);
                holder = mWordButtons.get(position);
-               holder.mButton = (Button)view.findViewById(R.id.item_button);
+               if(holder.mButton == null){
+                   holder.mButton = (Button)view.findViewById(R.id.item_button);
+                   //设置WordButton动画
+                   mWordButtonAnimation = AnimationUtils.loadAnimation(mContext,R.anim.scale);
+//                   mWordButtonAnimation.setStartOffset(position * 100);
 
-               //设置WordButton动画
-               mWordButtonAnimation = AnimationUtils.loadAnimation(mContext,R.anim.scale);
-               mWordButtonAnimation.setStartOffset(position * 100);
-
-               holder.mButton.setOnClickListener(new OnClickListener() {
-                   @Override
-                   public void onClick(View view) {
-                       mIListener.onWordButtonClick();
-                   }
-               });
+                   holder.mButton.setOnClickListener(new OnClickListener() {
+                       @Override
+                       public void onClick(View view) {
+                           mIListener.onWordButtonClick(holder);
+                       }
+                   });
+               }
 
                view.setTag(holder);
            }else{

@@ -3,6 +3,7 @@ package com.crazy.guess.music;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
@@ -29,10 +30,10 @@ public class MainActivity extends Activity implements View.OnClickListener{
     /**
      * ===============Constants=================
      */
-    private static final int OPTIONS_WORDS_SIZE = 24;
+    public static final int OPTIONS_WORDS_SIZE = 24;
     private static final int SELECTED_WORDS_SIZE = 4;
     /**
-     * ===============view widget==============
+     * ===============View Widget==============
      */
     //唱片控件
     private ImageView mViewPan = null;
@@ -42,6 +43,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private ImageButton mButtonPlay = null;
     //自定义控件 文字待选框
     private WordButtonGridView mWordButtonGridView = null;
+    //
+    private LinearLayout mLayoutContainer = null;
     /**
      * ===============Animations===============
      */
@@ -88,6 +91,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
      * 初始化控件
      */
     private void initViews(){
+        mLayoutContainer = (LinearLayout)findViewById(R.id.word_select_container);
+
         mButtonPlay = (ImageButton)findViewById(R.id.pan_button_start);
         mViewPan = (ImageView) findViewById(R.id.pan_img_disc);
         mViewBar = (ImageView) findViewById(R.id.pan_img_bar);
@@ -95,10 +100,31 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mWordButtonGridView = (WordButtonGridView) findViewById(R.id.words_gridview);
 
         mButtonPlay.setOnClickListener(this);
+
         mWordButtonGridView.setWordButtonOnClickListener(new IWordButtonOnClickListener() {
             @Override
-            public void onWordButtonClick() {
-                Toast.makeText(MainActivity.this, "hello", Toast.LENGTH_SHORT).show();
+            public void onWordButtonClick(WordButton wordButton) {
+                    //已选框依次出现文字
+                    //待选框文字文字消失
+                    for(int i=0;i<mSelectButtons.size();i++){
+                        if(TextUtils.isEmpty(mSelectButtons.get(i).mWordText)){
+                            //已选框出现文字
+                            mSelectButtons.get(i).mIndex = wordButton.mIndex;
+                            mSelectButtons.get(i).mVisable = true;
+                            mSelectButtons.get(i).mButton.setText(wordButton.mWordText);
+                            mSelectButtons.get(i).mWordText = wordButton.mWordText;
+                            mSelectButtons.get(i).mButton.setTextColor(Color.WHITE);
+                            mSelectButtons.get(i).mButton.setVisibility(View.VISIBLE);
+
+                            //待选框文字消失
+                            wordButton.mButton.setVisibility(View.INVISIBLE);
+                            wordButton.mVisable = false;
+
+                            break;
+                        }
+
+                }
+
             }
         });
 
@@ -200,7 +226,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
     }
 
     //当前关卡索引
-    private int mCurrentStageIndex = 9;
+    private int mCurrentStageIndex = 0;
 
     /**
      * 获取当前关卡歌曲信息
@@ -234,12 +260,25 @@ public class MainActivity extends Activity implements View.OnClickListener{
         //根据当前关卡获取歌曲名称长度
         List<WordButton> selectWords = new ArrayList<WordButton>();
         for(int i=0;i<getCurrentSongLength();i++){
+            final WordButton wordButton = new WordButton();
             View v =  Util.getView(this,R.layout.word_button_item);
-            WordButton wordButton = new WordButton();
             wordButton.mButton = (Button) v.findViewById(R.id.item_button);
             wordButton.mButton.setBackgroundResource(R.mipmap.game_wordblank);
             wordButton.mButton.setTextColor(Color.WHITE);
-            wordButton.mWordText = "美";
+            wordButton.mVisable = false;
+            //已选框点击事件
+            wordButton.mButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    wordButton.mVisable = false;
+                    wordButton.mButton.setText("");
+                    wordButton.mWordText = "";
+
+                    mWordButtons.get(wordButton.mIndex).mVisable = true;
+                    mWordButtons.get(wordButton.mIndex).mButton.setVisibility(View.VISIBLE);
+                }
+            });
+
             selectWords.add(wordButton);
         }
 
@@ -250,19 +289,10 @@ public class MainActivity extends Activity implements View.OnClickListener{
      * 动态设置已选框布局显示
      */
     private void setSelectedWordsLayout(){
-        LinearLayout layoutContainer = (LinearLayout)findViewById(R.id.word_select_container);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(40,40);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(50,50);
         for(int i=0;i<mSelectButtons.size();i++){
-            layoutContainer.addView(mSelectButtons.get(i).mButton, params);
+            mLayoutContainer.addView(mSelectButtons.get(i).mButton, params);
         }
-    }
-
-    /**
-     * 获取当前关卡歌曲名称
-     * @return
-     */
-    private char[] getSongName(){
-       return mCurrentSong.getSongName().toCharArray();
     }
 
     /**
@@ -281,19 +311,13 @@ public class MainActivity extends Activity implements View.OnClickListener{
         for(int i=songName.length;i<OPTIONS_WORDS_SIZE;i++){
             words[i] =Util.getRandomChar();
         }
-        //打乱待选文字框中填充顺序，算法为将歌曲名称的汉字与生成的随机数下标对应的汉字进行交换，交换次数为歌曲名称的长度（既3个字的歌曲名称则需交换3次）
-        for(int i=0;i<songName.length;i++){
-            Random random = new Random();
-            int index =  random.nextInt(OPTIONS_WORDS_SIZE);
-            char temp = words[index];
-            words[index] = words[i];
-            words[i] = temp;
-        }
+        //打乱待选框中的文字顺序
+        words = Util.getRandomOptionData(words);
 
         List<WordButton> wordButtons = new ArrayList<WordButton>();
-        //TODO 随机生成数据
         for(int i=0;i<OPTIONS_WORDS_SIZE;i++){
             WordButton wordButton = new WordButton();
+            wordButton.mIndex = i;
             wordButton.mWordText = String.valueOf(words[i]);
             wordButtons.add(wordButton);
         }
