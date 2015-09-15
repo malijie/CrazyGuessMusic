@@ -15,7 +15,7 @@ import java.util.Random;
 public class Util {
     public static View getView(Context context, int resId) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        View view = View.inflate(context, resId, null);
+        View view = inflater.inflate(resId, null);
         return view;
     }
 

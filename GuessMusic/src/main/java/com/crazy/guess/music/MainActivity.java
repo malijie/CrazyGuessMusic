@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -13,25 +12,30 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.crazy.guess.music.data.Constants;
 import com.crazy.guess.music.interfaces.IWordButtonOnClickListener;
 import com.crazy.guess.music.model.Song;
 import com.crazy.guess.music.model.WordButton;
+import com.crazy.guess.music.utils.Logger;
 import com.crazy.guess.music.utils.Util;
 import com.crazy.guess.music.widget.WordButtonGridView;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends Activity implements View.OnClickListener{
+    private static final String TAG = "MLJ";
     /**
      * ===============Constants=================
      */
     public static final int OPTIONS_WORDS_SIZE = 24;
     private static final int SELECTED_WORDS_SIZE = 4;
+
+    private static final int CHECK_ANSWER_RIGHT = 0;
+    private static final int CHECK_ANSWER_LACK = 1;
+    private static final int CHECK_ANSWER_WRONG = 2;
     /**
      * ===============View Widget==============
      */
@@ -104,27 +108,25 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mWordButtonGridView.setWordButtonOnClickListener(new IWordButtonOnClickListener() {
             @Override
             public void onWordButtonClick(WordButton wordButton) {
-                    //已选框依次出现文字
-                    //待选框文字文字消失
-                    for(int i=0;i<mSelectButtons.size();i++){
-                        if(TextUtils.isEmpty(mSelectButtons.get(i).mWordText)){
-                            //已选框出现文字
-                            mSelectButtons.get(i).mIndex = wordButton.mIndex;
-                            mSelectButtons.get(i).mVisable = true;
-                            mSelectButtons.get(i).mButton.setText(wordButton.mWordText);
-                            mSelectButtons.get(i).mWordText = wordButton.mWordText;
-                            mSelectButtons.get(i).mButton.setTextColor(Color.WHITE);
-                            mSelectButtons.get(i).mButton.setVisibility(View.VISIBLE);
+                for (int i = 0; i < mSelectButtons.size(); i++) {
+                    if (TextUtils.isEmpty(mSelectButtons.get(i).mWordText)) {
+                        //已选框出现文字
+                        mSelectButtons.get(i).mIndex = wordButton.mIndex;
+                        mSelectButtons.get(i).mVisable = true;
+                        mSelectButtons.get(i).mButton.setText(wordButton.mWordText);
+                        mSelectButtons.get(i).mWordText = wordButton.mWordText;
+                        mSelectButtons.get(i).mButton.setTextColor(Color.WHITE);
+                        mSelectButtons.get(i).mButton.setVisibility(View.VISIBLE);
 
-                            //待选框文字消失
-                            wordButton.mButton.setVisibility(View.INVISIBLE);
-                            wordButton.mVisable = false;
+                        //待选框文字消失
+                        wordButton.mButton.setVisibility(View.INVISIBLE);
+                        wordButton.mVisable = false;
 
-                            break;
-                        }
+                        break;
+                    }
 
                 }
-
+                handleTheAnswer();
             }
         });
 
@@ -322,6 +324,84 @@ public class MainActivity extends Activity implements View.OnClickListener{
             wordButtons.add(wordButton);
         }
         return wordButtons;
+    }
+
+    /**
+     * 检查当前答案情况
+     * @return 答案状态值，0:答案正确，1:答案缺失，2:答案正确
+     */
+    private int checkTheAnswer(){
+        //答案缺失
+        for(int i=0;i<mSelectButtons.size();i++){
+            if(mSelectButtons.get(i).mWordText.length() == 0){
+                return CHECK_ANSWER_LACK;
+            }
+        }
+        //答案错误
+        StringBuilder sb = new StringBuilder();
+        for(int i=0;i<mSelectButtons.size();i++){
+            sb.append(mSelectButtons.get(i).mWordText);
+        }
+        String songName = getCurrentStageSong(mCurrentStageIndex).getSongName();
+        if(!sb.toString().equals(songName)){
+            return CHECK_ANSWER_WRONG;
+        }
+        //答案正确
+        return CHECK_ANSWER_RIGHT;
+
+    }
+
+    /**
+     * 根据答案状态值
+     */
+    private void handleTheAnswer(){
+        int result = checkTheAnswer();
+        switch (result){
+            //答案缺失
+            case CHECK_ANSWER_LACK:
+                Logger.d(TAG, "answer is lack");
+
+                break;
+            //答案错误
+            case CHECK_ANSWER_WRONG:
+                Logger.d(TAG, "answer is wrong");
+                //闪烁提示用户
+                TimerTask task = new TimerTask() {
+                    //标志位，用于交替闪烁
+                    boolean mChange = false;
+                    //闪烁次数
+                    int times = 0;
+                    @Override
+                    public void run() {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(times > 6){
+                                    return;
+                                }
+
+                                for(int i=0;i<mSelectButtons.size();i++){
+                                    if(!mChange){
+                                        mSelectButtons.get(i).mButton.setTextColor(Color.RED);
+                                    }else{
+                                        mSelectButtons.get(i).mButton.setTextColor(Color.WHITE);
+                                    }
+                                }
+                                mChange = !mChange;
+                                times ++;
+                            }
+                        });
+                    }
+                };
+
+                Timer timer = new Timer();
+                timer.schedule(task,1,150);
+                break;
+            //答案正确
+            case CHECK_ANSWER_RIGHT:
+                Logger.d(TAG, "answer is right");
+                break;
+        }
     }
 
     @Override
