@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:layout_marginTop="5dip"
+    android:layout_marginTop="15dip"
     android:layout_centerInParent="true"
     android:gravity="center">
 
@@ -24,8 +24,8 @@
             android:textSize="18sp"/>
     </FrameLayout>
     <FrameLayout
-        android:layout_width="260dip"
-        android:layout_height="wrap_content">
+        android:layout_width="wrap_content"
+        android:layout_height="200dip">
         <ImageView
             android:id="@+id/pan_img_disc"
             android:layout_width="wrap_content"

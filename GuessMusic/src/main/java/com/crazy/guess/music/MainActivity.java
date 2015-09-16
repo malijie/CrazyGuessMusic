@@ -47,8 +47,10 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private ImageButton mButtonPlay = null;
     //自定义控件 文字待选框
     private WordButtonGridView mWordButtonGridView = null;
-    //
+    //已选框容器layout
     private LinearLayout mLayoutContainer = null;
+    //过关界面
+    private LinearLayout mPassLayoutView = null;
     /**
      * ===============Animations===============
      */
@@ -379,7 +381,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
                                 if(times > 6){
                                     return;
                                 }
-
+                                //文字交替闪烁
                                 for(int i=0;i<mSelectButtons.size();i++){
                                     if(!mChange){
                                         mSelectButtons.get(i).mButton.setTextColor(Color.RED);
@@ -400,8 +402,17 @@ public class MainActivity extends Activity implements View.OnClickListener{
             //答案正确
             case CHECK_ANSWER_RIGHT:
                 Logger.d(TAG, "answer is right");
+                handlePassEvent();
                 break;
         }
+    }
+
+    /**
+     * 处理过关逻辑
+     */
+    private void handlePassEvent(){
+        mPassLayoutView = (LinearLayout)findViewById(R.id.pass_view);
+        mPassLayoutView.setVisibility(View.VISIBLE);
     }
 
     @Override

@@ -1,11 +1,19 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@mipmap/index_background"
-    android:orientation="vertical">
+    android:background="@mipmap/index_background">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <include layout="@layout/top_bar"/>
+        <include layout="@layout/pan"/>
+        <include layout="@layout/name_select"/>
 
-  <include layout="@layout/top_bar"/>
-  <include layout="@layout/pan"/>
-  <include layout="@layout/name_select"/>
-</LinearLayout>
+    </LinearLayout>
+    <include layout="@layout/float_buttons"/>
+    <!-- 过关界面 -->
+    <include layout="@layout/pass_view"/>
+
+</FrameLayout>
