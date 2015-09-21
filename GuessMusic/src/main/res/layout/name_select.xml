@@ -2,7 +2,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    >
     <!--  文字已选框容器 -->
     <LinearLayout
         android:id="@+id/word_select_container"
@@ -16,6 +17,7 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="5dip"
         android:background="@mipmap/game_line"/>
     <!-- 自定义控件，文字待选框 -->
     <com.crazy.guess.music.widget.WordButtonGridView
@@ -24,10 +26,12 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:gravity="center"
-        android:horizontalSpacing="1dip"
-        android:verticalSpacing="1dip"
+        android:horizontalSpacing="2dip"
+        android:verticalSpacing="2dip"
         android:paddingLeft="2dip"
         android:paddingRight="2dip"
         android:numColumns="8"
+        android:layout_marginTop="10dip"
+        android:layout_gravity="center_vertical"
         />
 </LinearLayout>

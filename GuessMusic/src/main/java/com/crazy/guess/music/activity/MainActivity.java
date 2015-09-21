@@ -1,4 +1,4 @@
-package com.crazy.guess.music;
+package com.crazy.guess.music.activity;
 
 import android.app.Activity;
 import android.graphics.Color;
@@ -15,7 +15,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crazy.guess.music.R;
 import com.crazy.guess.music.data.Constants;
+import com.crazy.guess.music.interfaces.ITipOnClickListener;
 import com.crazy.guess.music.interfaces.IWordButtonOnClickListener;
 import com.crazy.guess.music.model.Song;
 import com.crazy.guess.music.model.WordButton;
@@ -33,12 +35,24 @@ public class MainActivity extends Activity implements View.OnClickListener{
     /**
      * ===============Constants=================
      */
+    //待选框汉字数量
     public static final int OPTIONS_WORDS_SIZE = 24;
+    //已选框汉字数量
     private static final int SELECTED_WORDS_SIZE = 4;
-
+    //当前答案状态——正确
     private static final int CHECK_ANSWER_RIGHT = 0;
+    //当前答案状态——缺失
     private static final int CHECK_ANSWER_LACK = 1;
+    //当前答案状态——错误
     private static final int CHECK_ANSWER_WRONG = 2;
+    //弹出对话框类型——提示一个汉字
+    private static final int DIALOG_COINS_TIP = 0;
+    //弹出对话框类型——删除一个汉字
+    private static final int DIALOG_COINS_DELETE = 1;
+    //弹出对话框类型——金币不够
+    private static final int DIALOG_COINS_LACK = 2;
+
+
     /**
      * ===============View Widget==============
      */
@@ -56,6 +70,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private LinearLayout mPassLayoutView = null;
     //金币数量
     private TextView mTextCurrentCoins = null;
+    //当前关卡
+    private TextView mTextCurrentLevel = null;
     /**
      * ===============Animations===============
      */
@@ -108,6 +124,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mViewPan = (ImageView) findViewById(R.id.pan_img_disc);
         mViewBar = (ImageView) findViewById(R.id.pan_img_bar);
         mTextCurrentCoins = (TextView) findViewById(R.id.topbar_text_coin_count);
+        mTextCurrentLevel = (TextView) findViewById(R.id.float_text_level);
 
         mWordButtonGridView = (WordButtonGridView) findViewById(R.id.words_gridview);
 
@@ -235,7 +252,13 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mWordButtons = getOptionsData();
         //将数据给自定义控件
         mWordButtonGridView.updateData(mWordButtons);
+        //设置当前关卡
+        setCurrentLevel(mCurrentStageIndex + 1);
 
+    }
+
+    private void setCurrentLevel(int currentLevel){
+        mTextCurrentLevel.setText(String.valueOf(currentLevel));
     }
 
     //当前关卡索引
@@ -269,7 +292,9 @@ public class MainActivity extends Activity implements View.OnClickListener{
      * 动态设置已选框布局显示
      */
     private void setSelectedWordsLayout(){
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(50,50);
+        //清除之前添加的所有view
+        mLayoutContainer.removeAllViews();
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(200,200);
         for(int i=0;i<mSelectButtons.size();i++){
             mLayoutContainer.addView(mSelectButtons.get(i).mButton, params);
         }
@@ -422,6 +447,25 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private void handlePassEvent(){
         mPassLayoutView = (LinearLayout)findViewById(R.id.pass_view);
         mPassLayoutView.setVisibility(View.VISIBLE);
+
+        initPassViews();
+    }
+
+    /**
+     * 初始化过界面控件
+     */
+    private void initPassViews() {
+        TextView mTextLevel = (TextView) findViewById(R.id.pass_text_level);
+        TextView mTextSong = (TextView) findViewById(R.id.pass_text_song);
+
+        mTextLevel.setText(String.valueOf(mCurrentStageIndex + 1));
+        mTextSong.setText(mCurrentSong.getSongName());
+
+        ImageButton mButtonNext = (ImageButton) findViewById(R.id.pass_button_next);
+        ImageButton mButtonWXShare = (ImageButton) findViewById(R.id.pass_button_share);
+
+        mButtonNext.setOnClickListener(this);
+        mButtonWXShare.setOnClickListener(this);
     }
 
     /**
@@ -442,17 +486,25 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mButtonDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int needCoins = getDeleteOneWordCoins();
-                if (consumeCoins(needCoins)) {
-                    //删除一个文字，1. 金币数量减少，2. 对应的WordButton消失
-                    mTextCurrentCoins.setText(mCurrentCoins + "");
-                    setWordButtonInVisible();
-
-                } else {
-                    //TODO: 金币不够减，弹出对话框
-                }
+                showAlertDialg(DIALOG_COINS_DELETE);
             }
         });
+    }
+
+    /**
+     * 删除一个单词事件
+     */
+    private void deleteOneWordEvent(){
+        int needCoins = getDeleteOneWordCoins();
+        if (consumeCoins(needCoins)) {
+            //删除一个文字，1. 金币数量减少，2. 对应的WordButton消失
+            mTextCurrentCoins.setText(mCurrentCoins + "");
+            setWordButtonInVisible();
+
+        } else {
+            //TODO: 金币不够减，弹出对话框
+            showAlertDialg(DIALOG_COINS_LACK);
+        }
     }
 
     /**
@@ -532,45 +584,53 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mButtonTip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int needCoins = getTipOneWordCoins();
-                mCurrentCoins = getCurrentCoins();
-                if(mCurrentCoins-needCoins>0){
-                    //已选框中是否被占满
-                    if(!checkSelectionWordsIsFull()){
-                        //待选框中，答案对应的按钮消失
-                        WordButton buf = findOneAnswerButton();
-                        if(buf == null){
-                            //后面的答案在前面的已选框中,清除已选框，重新提示一个答案
-                            Toast.makeText(MainActivity.this,"一个答案已被选中",Toast.LENGTH_LONG).show();
-                            return;
-
-                        }
-                        buf.mVisable = false;
-                        buf.mButton.setVisibility(View.INVISIBLE);
-                        //已选框中，答案对应按钮出现
-                        for(int i=0;i<SELECTED_WORDS_SIZE;i++){
-                            WordButton answerButton = mSelectButtons.get(i);
-                            if(answerButton.mVisable == false){
-                                answerButton.mWordText = buf.mWordText;
-                                answerButton.mVisable = true;
-                                answerButton.mIndex = buf.mIndex;
-                                answerButton.mButton.setText(buf.mWordText);
-                                answerButton.mButton.setTextColor(Color.WHITE);
-                                break;
-                            }
-                        }
-                        //减去金币
-                        consumeCoins(needCoins);
-                        mTextCurrentCoins.setText(mCurrentCoins + "");
-                    }
-                        //已选框被占满，检查答案
-                        handleTheAnswer();
-
-                }else{
-                    //TODO: 金币不够减，显示提示对话框
-                }
+                showAlertDialg(DIALOG_COINS_TIP);
             }
         });
+    }
+
+    /**
+     * 提示一个正确答案事件
+     */
+    private void tipOneAnswerEvent(){
+        int needCoins = getTipOneWordCoins();
+        mCurrentCoins = getCurrentCoins();
+        if(mCurrentCoins-needCoins>0){
+            //已选框中是否被占满
+            if(!checkSelectionWordsIsFull()){
+                //待选框中，答案对应的按钮消失
+                WordButton buf = findOneAnswerButton();
+                if(buf == null){
+                    //后面的答案在前面的已选框中,清除已选框，重新提示一个答案
+                    Toast.makeText(MainActivity.this,"一个答案已被选中",Toast.LENGTH_LONG).show();
+                    return;
+
+                }
+                buf.mVisable = false;
+                buf.mButton.setVisibility(View.INVISIBLE);
+                //已选框中，答案对应按钮出现
+                for(int i=0;i<SELECTED_WORDS_SIZE;i++){
+                    WordButton answerButton = mSelectButtons.get(i);
+                    if(answerButton.mVisable == false){
+                        answerButton.mWordText = buf.mWordText;
+                        answerButton.mVisable = true;
+                        answerButton.mIndex = buf.mIndex;
+                        answerButton.mButton.setText(buf.mWordText);
+                        answerButton.mButton.setTextColor(Color.WHITE);
+                        break;
+                    }
+                }
+                //减去金币
+                consumeCoins(needCoins);
+                mTextCurrentCoins.setText(mCurrentCoins + "");
+            }
+            //已选框被占满，检查答案
+            handleTheAnswer();
+
+        }else{
+            //金币不够减，显示提示对话框
+            showAlertDialg(DIALOG_COINS_LACK);
+        }
     }
 
     /**
@@ -625,6 +685,18 @@ public class MainActivity extends Activity implements View.OnClickListener{
             case R.id.pan_button_start:
                 handlePlayStart();
               break;
+            //下一关
+            case R.id.pass_button_next:
+                if(judgeIsCompleteGame()){
+                    //已通关
+                    Util.startActivity(MainActivity.this,CompleteActivity.class);
+                }else{
+                    mCurrentStageIndex++;
+                    clearAnimations();
+                    mPassLayoutView.setVisibility(View.INVISIBLE);
+                    initCurrentStageData();
+                }
+                break;
         }
     }
 
@@ -641,9 +713,60 @@ public class MainActivity extends Activity implements View.OnClickListener{
        }
    }
 
+
+    /**
+     * 通过id类型弹出提示对话框
+      * @param id
+     */
+   private void showAlertDialg(int id){
+       switch (id){
+           case DIALOG_COINS_DELETE:
+               Util.showTipAlertDialg(this, "花费30金币删除一个错误答案？", new ITipOnClickListener() {
+                   @Override
+                   public void onClick() {
+                       deleteOneWordEvent();
+                   }
+               });
+               break;
+           case DIALOG_COINS_TIP:
+               Util.showTipAlertDialg(this, "花费90金币提示一个正确答案？", new ITipOnClickListener() {
+                   @Override
+                   public void onClick() {
+                    tipOneAnswerEvent();
+                   }
+               });
+               break;
+           case DIALOG_COINS_LACK:
+               Util.showTipAlertDialg(this, "金币不够了，到商城补充？", new ITipOnClickListener() {
+                   @Override
+                   public void onClick() {
+
+                   }
+               });
+               break;
+
+       }
+   }
+
+    /**
+     * 判断是否通关
+     * @return
+     */
+    private boolean judgeIsCompleteGame(){
+        return mCurrentStageIndex == Constants.SONGS_INFO.length - 1 ? true : false;
+    }
+
+    /**
+     * 清除动画效果
+     */
+    private void clearAnimations(){
+        mViewPan.clearAnimation();
+        mViewBar.clearAnimation();
+    }
+
     @Override
     protected void onPause() {
-        mViewPan.clearAnimation();
+        clearAnimations();
         super.onPause();
     }
 }

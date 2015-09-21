@@ -1,10 +1,19 @@
 package com.crazy.guess.music.utils;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.TextView;
 
-import com.crazy.guess.music.MainActivity;
+import com.crazy.guess.music.R;
+import com.crazy.guess.music.activity.MainActivity;
+import com.crazy.guess.music.interfaces.ITipOnClickListener;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Random;
@@ -65,5 +74,53 @@ public class Util {
         return data;
     }
 
+    /**
+     * 跳转到相应的Activity
+     * @param context
+     * @param desti
+     */
+    public static void startActivity(Context context, Class desti){
+        Intent intent = new Intent();
+        intent.setClass(context,desti);
+        context.startActivity(intent);
+
+        ((Activity)context).finish();
+    }
+
+    /**
+     * 弹出提示对话框
+     * @param context
+     * @param message
+     * @param listener
+     */
+    public static void showTipAlertDialg(Context context, String message,
+                                         final ITipOnClickListener listener){
+        final View v = getView(context, R.layout.tip_view);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context,R.style.DialogTheme);
+        builder.setView(v);
+        final AlertDialog alertDialog = builder.create();
+
+        ImageButton okButton = (ImageButton) v.findViewById(R.id.tip_button_ok);
+        ImageButton cancelButton = (ImageButton) v.findViewById(R.id.tip_button_cancel);
+        TextView messageText = (TextView) v.findViewById(R.id.tip_text_message);
+        messageText.setText(message);
+
+        okButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alertDialog.dismiss();
+                listener.onClick();
+            }
+        });
+
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alertDialog.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
 
 }
