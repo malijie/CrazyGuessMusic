@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.crazy.guess.music.R;
 import com.crazy.guess.music.activity.MainActivity;
+import com.crazy.guess.music.data.Constants;
 import com.crazy.guess.music.interfaces.ITipOnClickListener;
 
 import java.io.UnsupportedEncodingException;
@@ -93,8 +94,11 @@ public class Util {
      * @param message
      * @param listener
      */
-    public static void showTipAlertDialg(Context context, String message,
+    public static void showTipAlertDialg(final Context context, String message,
                                          final ITipOnClickListener listener){
+        //播放音效
+        MusicMediaPlayer.playTheTone(context, Constants.TONE_ENTER);
+
         final View v = getView(context, R.layout.tip_view);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context,R.style.DialogTheme);
@@ -109,6 +113,7 @@ public class Util {
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                MusicMediaPlayer.playTheTone(context, Constants.TONE_COIN);
                 alertDialog.dismiss();
                 listener.onClick();
             }
@@ -117,6 +122,7 @@ public class Util {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                MusicMediaPlayer.playTheTone(context, Constants.TONE_CANCEL);
                 alertDialog.dismiss();
             }
         });

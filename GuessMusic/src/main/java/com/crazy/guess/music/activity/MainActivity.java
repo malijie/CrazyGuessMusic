@@ -22,6 +22,7 @@ import com.crazy.guess.music.interfaces.IWordButtonOnClickListener;
 import com.crazy.guess.music.model.Song;
 import com.crazy.guess.music.model.WordButton;
 import com.crazy.guess.music.utils.Logger;
+import com.crazy.guess.music.utils.MusicMediaPlayer;
 import com.crazy.guess.music.utils.Util;
 import com.crazy.guess.music.widget.WordButtonGridView;
 import java.util.ArrayList;
@@ -111,7 +112,6 @@ public class MainActivity extends Activity implements View.OnClickListener{
         initViews();
         //初始化待选框中数据
         initCurrentStageData();
-
     }
 
     /**
@@ -244,6 +244,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
      * 初始化待选框数据
      */
     private void initCurrentStageData(){
+
         //生成已选文字框数据
         mSelectButtons = getSelectedWords();
         //设置已选文字框布局
@@ -254,6 +255,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mWordButtonGridView.updateData(mWordButtons);
         //设置当前关卡
         setCurrentLevel(mCurrentStageIndex + 1);
+        //进入自动播放
+        handlePlayStart();
 
     }
 
@@ -294,7 +297,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private void setSelectedWordsLayout(){
         //清除之前添加的所有view
         mLayoutContainer.removeAllViews();
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(200,200);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(100,100);
         for(int i=0;i<mSelectButtons.size();i++){
             mLayoutContainer.addView(mSelectButtons.get(i).mButton, params);
         }
@@ -445,10 +448,23 @@ public class MainActivity extends Activity implements View.OnClickListener{
      * 处理过关逻辑
      */
     private void handlePassEvent(){
+        //停止播放音乐
+        MusicMediaPlayer.stopTheSong();
+        //清除动画
+        clearAnimations();
+
         mPassLayoutView = (LinearLayout)findViewById(R.id.pass_view);
         mPassLayoutView.setVisibility(View.VISIBLE);
 
         initPassViews();
+    }
+
+    /**
+     * 处理金币逻辑
+     */
+    private void handleCoinEvent(){
+        handleDeleteWordEvent();
+        handleTipWordEvent();
     }
 
     /**
@@ -466,14 +482,6 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
         mButtonNext.setOnClickListener(this);
         mButtonWXShare.setOnClickListener(this);
-    }
-
-    /**
-     * 处理金币逻辑
-     */
-    private void handleCoinEvent(){
-        handleDeleteWordEvent();
-        handleTipWordEvent();
     }
 
     //当前金币数量
@@ -709,6 +717,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
                isPlaying = true;
                mButtonPlay.setVisibility(View.INVISIBLE);
                mViewBar.startAnimation(mBarInAnim);
+               //播放音乐
+               MusicMediaPlayer.playTheSong(MainActivity.this, mCurrentSong.getFileName());
            }
        }
    }
@@ -767,6 +777,13 @@ public class MainActivity extends Activity implements View.OnClickListener{
     @Override
     protected void onPause() {
         clearAnimations();
+        MusicMediaPlayer.stopTheSong();
         super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        MusicMediaPlayer.stopTheSong();
+        super.onStop();
     }
 }

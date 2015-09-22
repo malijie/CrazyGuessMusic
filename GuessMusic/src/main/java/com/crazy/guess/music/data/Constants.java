@@ -9,6 +9,13 @@ public class Constants {
     public static final int FILE_NAME_INDEX = 0;
     //歌曲名称索引
     public static final int SONG_NAME_INDEX = 1;
+    //音效索引-－取消
+    public static final int TONE_CANCEL = 0;
+    //音效索引－－金币
+    public static final int TONE_COIN = 1;
+    //音效索引－－确定
+    public static final int TONE_ENTER = 2;
+
 
     //歌曲信息 文件名 ＋ 歌曲名称
     public static final String[][] SONGS_INFO = {
@@ -23,5 +30,9 @@ public class Constants {
             {"__00008.m4a", "再见"},
             {"__00009.m4a", "老男孩"},
             {"__00010.m4a", "龙的传人"},
+    };
+    //音效
+    public static final String[] TONES_INFO = {
+        "cancel.mp3","coin.mp3","enter.mp3"
     };
 }
