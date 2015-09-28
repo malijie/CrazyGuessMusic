@@ -16,6 +16,12 @@ import com.crazy.guess.music.activity.MainActivity;
 import com.crazy.guess.music.data.Constants;
 import com.crazy.guess.music.interfaces.ITipOnClickListener;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Random;
 
@@ -32,7 +38,6 @@ public class Util {
     /**
      * 生成随机汉字
      * http://www.cnblogs.com/skyivben/archive/2012/10/20/2732484.html
-     *
      * @return
      */
     public static char getRandomChar() {
@@ -82,7 +87,7 @@ public class Util {
      */
     public static void startActivity(Context context, Class desti){
         Intent intent = new Intent();
-        intent.setClass(context,desti);
+        intent.setClass(context, desti);
         context.startActivity(intent);
 
         ((Activity)context).finish();
@@ -94,7 +99,7 @@ public class Util {
      * @param message
      * @param listener
      */
-    public static void showTipAlertDialg(final Context context, String message,
+    public static void showTipAlertDialg(final int type,final Context context, String message,
                                          final ITipOnClickListener listener){
         //播放音效
         MusicMediaPlayer.playTheTone(context, Constants.TONE_ENTER);
@@ -113,7 +118,11 @@ public class Util {
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MusicMediaPlayer.playTheTone(context, Constants.TONE_COIN);
+                if(type == MainActivity.DIALOG_EXIT){
+                    MusicMediaPlayer.playTheTone(context,Constants.TONE_ENTER);
+                }else{
+                    MusicMediaPlayer.playTheTone(context, Constants.TONE_COIN);
+                }
                 alertDialog.dismiss();
                 listener.onClick();
             }
@@ -127,6 +136,64 @@ public class Util {
             }
         });
         alertDialog.show();
+    }
+
+    /**
+     * 保存数据
+     * @param stageIndex 当前关卡
+     * @param coins 金币数量
+     */
+    public static void saveData(Context context,int stageIndex, int coins){
+        FileOutputStream fos = null;
+        try {
+            fos = context.openFileOutput(Constants.SAVE_DATA_FILE_NAME,Context.MODE_PRIVATE);
+            DataOutputStream dos = new DataOutputStream(fos);
+            dos.writeInt(stageIndex);
+            dos.writeInt(coins);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally{
+            if(fos != null){
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * 读取数据
+     * @return
+     */
+    public static int[] loadData(Context context){
+        //默认从第一关开始，金币树脂为100
+        int[] data = {0,100};
+        FileInputStream fis = null;
+        try {
+            fis = context.openFileInput(Constants.SAVE_DATA_FILE_NAME);
+
+            DataInputStream dis = new DataInputStream(fis);
+            data[Constants.SAVE_DATA_INDEX] = dis.readInt();
+            data[Constants.SAVE_DATA_COINS] = dis.readInt();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            if(fis != null){
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return data;
     }
 
 }

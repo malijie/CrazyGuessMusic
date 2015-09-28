@@ -1,6 +1,8 @@
 package com.crazy.guess.music.activity;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -45,14 +47,15 @@ public class MainActivity extends Activity implements View.OnClickListener{
     //当前答案状态——缺失
     private static final int CHECK_ANSWER_LACK = 1;
     //当前答案状态——错误
-    private static final int CHECK_ANSWER_WRONG = 2;
+    public static final int CHECK_ANSWER_WRONG = 2;
     //弹出对话框类型——提示一个汉字
-    private static final int DIALOG_COINS_TIP = 0;
+    public static final int DIALOG_COINS_TIP = 0;
     //弹出对话框类型——删除一个汉字
-    private static final int DIALOG_COINS_DELETE = 1;
+    public static final int DIALOG_COINS_DELETE = 1;
     //弹出对话框类型——金币不够
-    private static final int DIALOG_COINS_LACK = 2;
-
+    public static final int DIALOG_COINS_LACK = 2;
+    //弹出对话框类型—退出
+    public static final int DIALOG_EXIT = 3;
 
     /**
      * ===============View Widget==============
@@ -73,6 +76,14 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private TextView mTextCurrentCoins = null;
     //当前关卡
     private TextView mTextCurrentLevel = null;
+    //删除一个错误答案按钮
+    private ImageButton mButtonDelete = null;
+    //提示一个正确答案按钮
+    private ImageButton mButtonTip = null;
+    //分享按钮
+    private ImageButton mButtonShare = null;
+    //增加金币按钮
+    private ImageButton mButtoAddCoins= null;
     /**
      * ===============Animations===============
      */
@@ -105,13 +116,23 @@ public class MainActivity extends Activity implements View.OnClickListener{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        //读取数据
+        loadData(MainActivity.this);
         //初始化动画
         initAnimations();
         //初始化控件
         initViews();
         //初始化待选框中数据
         initCurrentStageData();
+    }
+
+    /**
+     * 读取数据
+     */
+    private void loadData(Context context){
+        int data[] = Util.loadData(context);
+        mCurrentStageIndex = data[Constants.SAVE_DATA_INDEX];
+        mCurrentCoins = data[Constants.SAVE_DATA_COINS];
     }
 
     /**
@@ -126,9 +147,15 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mTextCurrentCoins = (TextView) findViewById(R.id.topbar_text_coin_count);
         mTextCurrentLevel = (TextView) findViewById(R.id.float_text_level);
 
+        mButtonShare = (ImageButton) findViewById(R.id.float_button_share);
+        mButtonDelete = (ImageButton) findViewById(R.id.float_button_delete);
+        mButtonTip = (ImageButton) findViewById(R.id.float_button_tip);
+        mButtoAddCoins = (ImageButton) findViewById(R.id.topbar_button_addcoin);
+
         mWordButtonGridView = (WordButtonGridView) findViewById(R.id.words_gridview);
 
         mButtonPlay.setOnClickListener(this);
+        mButtoAddCoins.setOnClickListener(this);
 
         mWordButtonGridView.setWordButtonOnClickListener(new IWordButtonOnClickListener() {
             @Override
@@ -244,7 +271,6 @@ public class MainActivity extends Activity implements View.OnClickListener{
      * 初始化待选框数据
      */
     private void initCurrentStageData(){
-
         //生成已选文字框数据
         mSelectButtons = getSelectedWords();
         //设置已选文字框布局
@@ -257,6 +283,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
         setCurrentLevel(mCurrentStageIndex + 1);
         //进入自动播放
         handlePlayStart();
+        //设置浮动按钮可点击
+        setFloatButtonsClick();
 
     }
 
@@ -297,7 +325,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private void setSelectedWordsLayout(){
         //清除之前添加的所有view
         mLayoutContainer.removeAllViews();
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(100,100);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(180,180);
         for(int i=0;i<mSelectButtons.size();i++){
             mLayoutContainer.addView(mSelectButtons.get(i).mButton, params);
         }
@@ -452,6 +480,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
         MusicMediaPlayer.stopTheSong();
         //清除动画
         clearAnimations();
+        //浮动按钮不可点
+        setFloatButtonsUnClick();
 
         mPassLayoutView = (LinearLayout)findViewById(R.id.pass_view);
         mPassLayoutView.setVisibility(View.VISIBLE);
@@ -490,11 +520,10 @@ public class MainActivity extends Activity implements View.OnClickListener{
      * 处理删除干扰选项事件
      */
     private void handleDeleteWordEvent() {
-        ImageButton mButtonDelete = (ImageButton) findViewById(R.id.float_button_delete);
         mButtonDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showAlertDialg(DIALOG_COINS_DELETE);
+                showAlertDialog(DIALOG_COINS_DELETE);
             }
         });
     }
@@ -510,8 +539,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
             setWordButtonInVisible();
 
         } else {
-            //TODO: 金币不够减，弹出对话框
-            showAlertDialg(DIALOG_COINS_LACK);
+            //金币不够减，弹出对话框
+            showAlertDialog(DIALOG_COINS_LACK);
         }
     }
 
@@ -588,11 +617,10 @@ public class MainActivity extends Activity implements View.OnClickListener{
      * 处理提示一个答案事件
      */
     private void handleTipWordEvent(){
-        ImageButton mButtonTip = (ImageButton) findViewById(R.id.float_button_tip);
         mButtonTip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showAlertDialg(DIALOG_COINS_TIP);
+                showAlertDialog(DIALOG_COINS_TIP);
             }
         });
     }
@@ -637,7 +665,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
         }else{
             //金币不够减，显示提示对话框
-            showAlertDialg(DIALOG_COINS_LACK);
+            showAlertDialog(DIALOG_COINS_LACK);
         }
     }
 
@@ -705,6 +733,10 @@ public class MainActivity extends Activity implements View.OnClickListener{
                     initCurrentStageData();
                 }
                 break;
+            //增加金币
+            case R.id.topbar_button_addcoin:
+                goToShopActivity();
+                break;
         }
     }
 
@@ -728,10 +760,10 @@ public class MainActivity extends Activity implements View.OnClickListener{
      * 通过id类型弹出提示对话框
       * @param id
      */
-   private void showAlertDialg(int id){
+   private void showAlertDialog(int id){
        switch (id){
            case DIALOG_COINS_DELETE:
-               Util.showTipAlertDialg(this, "花费30金币删除一个错误答案？", new ITipOnClickListener() {
+               Util.showTipAlertDialg(DIALOG_COINS_DELETE,this, "花费30金币删除一个错误答案？", new ITipOnClickListener() {
                    @Override
                    public void onClick() {
                        deleteOneWordEvent();
@@ -739,7 +771,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
                });
                break;
            case DIALOG_COINS_TIP:
-               Util.showTipAlertDialg(this, "花费90金币提示一个正确答案？", new ITipOnClickListener() {
+               Util.showTipAlertDialg(DIALOG_COINS_TIP,this, "花费90金币提示一个正确答案？", new ITipOnClickListener() {
                    @Override
                    public void onClick() {
                     tipOneAnswerEvent();
@@ -747,16 +779,25 @@ public class MainActivity extends Activity implements View.OnClickListener{
                });
                break;
            case DIALOG_COINS_LACK:
-               Util.showTipAlertDialg(this, "金币不够了，到商城补充？", new ITipOnClickListener() {
+               Util.showTipAlertDialg(DIALOG_COINS_LACK,this, "金币不够了，到商城补充？", new ITipOnClickListener() {
                    @Override
                    public void onClick() {
-
+                       goToShopActivity();
                    }
                });
-               break;
 
        }
    }
+
+    @Override
+    public void onBackPressed() {
+        Util.showTipAlertDialg(DIALOG_EXIT,this, "确定要退出吗？", new ITipOnClickListener() {
+            @Override
+            public void onClick() {
+                MainActivity.this.finish();
+            }
+        });
+    }
 
     /**
      * 判断是否通关
@@ -774,9 +815,39 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mViewBar.clearAnimation();
     }
 
+    /**
+     * 提示一个正确答案，去掉一个干扰答案，以及分享按钮不可点击
+     */
+    private void setFloatButtonsUnClick(){
+        mButtonDelete.setClickable(false);
+        mButtonTip.setClickable(false);
+        mButtonPlay.setClickable(false);
+    }
+
+    /**
+     * 提示一个正确答案，去掉一个干扰答案，以及分享按钮可点击
+     */
+    private void setFloatButtonsClick(){
+        mButtonDelete.setClickable(true);
+        mButtonTip.setClickable(true);
+        mButtonPlay.setClickable(true);
+    }
+
+    /**
+     * 去到购物商城
+     */
+    private void goToShopActivity(){
+        Intent intent = new Intent(MainActivity.this,ShopActivity.class);
+        startActivity(intent);
+    }
+
     @Override
     protected void onPause() {
+        //保存数据
+        Util.saveData(MainActivity.this,mCurrentStageIndex,mCurrentCoins);
+        //清除动画效果
         clearAnimations();
+        //停止播放音乐
         MusicMediaPlayer.stopTheSong();
         super.onPause();
     }
